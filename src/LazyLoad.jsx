@@ -6,6 +6,7 @@ import debounce from 'lodash/debounce';
 import throttle from 'lodash/throttle';
 import parentScroll from './utils/parentScroll';
 import inViewport from './utils/inViewport';
+import { lazyLoadingEvent } from './utils/customEvents';
 
 export default class LazyLoad extends Component {
   constructor(props) {
@@ -22,6 +23,7 @@ export default class LazyLoad extends Component {
     }
 
     this.state = { visible: false };
+    this.customEvent = props.needsCustomEvent ? lazyLoadingEvent.type : undefined;
   }
 
   componentDidMount() {
@@ -34,20 +36,25 @@ export default class LazyLoad extends Component {
       this.lazyLoadHandler.flush();
     }
 
-    add(window, 'resize', this.lazyLoadHandler);
-    add(eventNode, 'scroll', this.lazyLoadHandler);
+    if (this.customEvent) {
+      add(eventNode, this.customEvent, this.lazyLoadHandler);
+    } else {
+      add(window, 'resize', this.lazyLoadHandler);
+      add(eventNode, 'scroll', this.lazyLoadHandler);
 
-    if (eventNode !== window) add(window, 'scroll', this.lazyLoadHandler);
+      if (eventNode !== window) add(window, 'scroll', this.lazyLoadHandler);
+    }
+  }
+
+
+  shouldComponentUpdate(_nextProps, nextState) {
+    return nextState.visible;
   }
 
   componentDidUpdate() {
     if (!this.state.visible) {
       this.lazyLoadHandler();
     }
-  }
-
-  shouldComponentUpdate(_nextProps, nextState) {
-    return nextState.visible;
   }
 
   componentWillUnmount() {
@@ -103,11 +110,14 @@ export default class LazyLoad extends Component {
 
   detachListeners() {
     const eventNode = this.getEventNode();
+    if (this.customEvent) {
+      remove(eventNode, this.customEvent, this.lazyLoadHandler);
+    } else {
+      remove(window, 'resize', this.lazyLoadHandler);
+      remove(eventNode, 'scroll', this.lazyLoadHandler);
 
-    remove(window, 'resize', this.lazyLoadHandler);
-    remove(eventNode, 'scroll', this.lazyLoadHandler);
-
-    if (eventNode !== window) remove(window, 'scroll', this.lazyLoadHandler);
+      if (eventNode !== window) remove(window, 'scroll', this.lazyLoadHandler);
+    }
   }
 
   render() {
@@ -137,6 +147,7 @@ LazyLoad.propTypes = {
     PropTypes.string,
     PropTypes.number,
   ]),
+  needsCustomEvent: PropTypes.bool,
   offset: PropTypes.number,
   offsetBottom: PropTypes.number,
   offsetHorizontal: PropTypes.number,
@@ -165,3 +176,5 @@ LazyLoad.defaultProps = {
   offsetVertical: 0,
   throttle: 250,
 };
+
+export { lazyLoadingEvent };
