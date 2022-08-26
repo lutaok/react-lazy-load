@@ -6,7 +6,7 @@ import debounce from 'lodash/debounce';
 import throttle from 'lodash/throttle';
 import parentScroll from './utils/parentScroll';
 import inViewport from './utils/inViewport';
-import { lazyLoadingEvent } from './utils/customEvents';
+import { LAZY_LOADING_EVENT, PARENT_SCROLL_CLASS } from './utils/constants';
 
 export default class LazyLoad extends Component {
   constructor(props) {
@@ -23,7 +23,8 @@ export default class LazyLoad extends Component {
     }
 
     this.state = { visible: false };
-    this.customEvent = props.needsCustomEvent ? lazyLoadingEvent.type : undefined;
+    this.customEvent = props.needsCustomEvent ? LAZY_LOADING_EVENT.type : undefined;
+    this.parentScrollClass = props.needsCustomEvent ? PARENT_SCROLL_CLASS : undefined;
   }
 
   componentDidMount() {
@@ -67,7 +68,7 @@ export default class LazyLoad extends Component {
   }
 
   getEventNode() {
-    return parentScroll(findDOMNode(this));
+    return parentScroll(findDOMNode(this), this.parentScrollClass);
   }
 
   getOffset() {
@@ -177,4 +178,4 @@ LazyLoad.defaultProps = {
   throttle: 250,
 };
 
-export { lazyLoadingEvent };
+export { LAZY_LOADING_EVENT, PARENT_SCROLL_CLASS };

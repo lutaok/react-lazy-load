@@ -6,7 +6,12 @@ const style = (element, prop) =>
 const overflow = (element) =>
   style(element, 'overflow') + style(element, 'overflow-y') + style(element, 'overflow-x');
 
-const scrollParent = (element) => {
+const scrollClass = (element, className) => {
+  if (!element) return false;
+  return element.classList.contains(className);
+};
+
+const scrollParent = (element, parentClass) => {
   if (!(element instanceof HTMLElement)) {
     return window;
   }
@@ -21,8 +26,11 @@ const scrollParent = (element) => {
     if (!parent.parentNode) {
       break;
     }
-
-    if (/(scroll|auto)/.test(overflow(parent))) {
+    if (parentClass) {
+      if (scrollClass(parent, parentClass)) {
+        return parent;
+      }
+    } else if (/(scroll|auto)/.test(overflow(parent))) {
       return parent;
     }
 
