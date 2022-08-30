@@ -6,7 +6,7 @@ import debounce from 'lodash/debounce';
 import throttle from 'lodash/throttle';
 import parentScroll from './utils/parentScroll';
 import inViewport from './utils/inViewport';
-import { LAZY_LOADING_EVENT, PARENT_SCROLL_CLASS } from './utils/constants';
+import { SCROLL_CLASSNAME } from './utils/constants';
 
 export default class LazyLoad extends Component {
   constructor(props) {
@@ -23,8 +23,7 @@ export default class LazyLoad extends Component {
     }
 
     this.state = { visible: false };
-    this.customEvent = props.needsCustomEvent ? LAZY_LOADING_EVENT.type : undefined;
-    this.parentScrollClass = props.needsCustomEvent ? PARENT_SCROLL_CLASS : undefined;
+    this.parentScrollClass = SCROLL_CLASSNAME;
   }
 
   componentDidMount() {
@@ -36,15 +35,10 @@ export default class LazyLoad extends Component {
     if (this.lazyLoadHandler.flush) {
       this.lazyLoadHandler.flush();
     }
+    add(window, 'resize', this.lazyLoadHandler);
+    add(eventNode, 'scroll', this.lazyLoadHandler);
 
-    if (this.customEvent) {
-      add(eventNode, this.customEvent, this.lazyLoadHandler);
-    } else {
-      add(window, 'resize', this.lazyLoadHandler);
-      add(eventNode, 'scroll', this.lazyLoadHandler);
-
-      if (eventNode !== window) add(window, 'scroll', this.lazyLoadHandler);
-    }
+    if (eventNode !== window) add(window, 'scroll', this.lazyLoadHandler);
   }
 
 
@@ -111,14 +105,11 @@ export default class LazyLoad extends Component {
 
   detachListeners() {
     const eventNode = this.getEventNode();
-    if (this.customEvent) {
-      remove(eventNode, this.customEvent, this.lazyLoadHandler);
-    } else {
-      remove(window, 'resize', this.lazyLoadHandler);
-      remove(eventNode, 'scroll', this.lazyLoadHandler);
 
-      if (eventNode !== window) remove(window, 'scroll', this.lazyLoadHandler);
-    }
+    remove(window, 'resize', this.lazyLoadHandler);
+    remove(eventNode, 'scroll', this.lazyLoadHandler);
+
+    if (eventNode !== window) remove(window, 'scroll', this.lazyLoadHandler);
   }
 
   render() {
@@ -178,4 +169,4 @@ LazyLoad.defaultProps = {
   throttle: 250,
 };
 
-export { LAZY_LOADING_EVENT, PARENT_SCROLL_CLASS };
+export { SCROLL_CLASSNAME };

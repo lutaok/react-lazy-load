@@ -26,10 +26,8 @@ const scrollParent = (element, parentClass) => {
     if (!parent.parentNode) {
       break;
     }
-    if (parentClass) {
-      if (scrollClass(parent, parentClass)) {
-        return parent;
-      }
+    if (scrollClass(parent, parentClass)) {
+      return parent;
     } else if (/(scroll|auto)/.test(overflow(parent))) {
       return parent;
     }
